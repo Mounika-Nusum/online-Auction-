@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction App</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('https://media.istockphoto.com/id/1439686281/vector/auction-and-mobile-phone-bidding-concept.jpg?s=612x612&w=0&k=20&c=YfINX2-ALYsSG93X91c3WzwUiE-h9lm3Jx3tOViERxM=') no-repeat center center fixed;
+            background-size: cover;
+        }
+        @media (max-width: 768px) {
+            body {
+                background-size: contain;
+            }
+        }
+        .header {
+            background: rgba(74, 144, 226, 0.9);
+            padding: 20px;
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            font-family: 'Playfair Display', serif;
+            border-bottom: 5px solid #2A6BA2;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+        .marquee {
+            background:#0cf74b;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            color: black;
+           
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .nav a {
+            color: #4A90E2;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        .nav a.disabled {
+            color: gray;
+            pointer-events: none;
+        }
+        .container {
+            width: 90%;
+            max-width: 350px;
+            margin: 60px auto;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #357ABD;
+        }
+        .footer {
+            margin-top: 40px;
+            padding: 15px;
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+        }
+        .landing {
+            display: block;
+            text-align: center;
+            padding: 20px;
+            color: black;
+            font-weight: bold;
+        }
+    </style>
+    <script>
+        function showSection(sectionId) {
+            document.querySelectorAll('.container').forEach(el => el.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
+    </script>
+</head>
+<body>
+    <div class="header">Auction App</div>
+    <marquee class="marquee">Auctions are going on</marquee>
+    <div class="nav">
+        <a onclick="showSection('signin-container')">Signin</a>
+        <a onclick="showSection('signup-container')">Signup</a>
+        <a onclick="showSection('dashboard-container')" id="dashboard-link" class="disabled">Dashboard</a>
+        <a onclick="showSection('post-auction-container')" id="post-auction-link" class="disabled">Post Auction</a>
+    </div>
+    
+    <div class="landing" id="landing-container">
+        <h2>Welcome to Auction App</h2>
+        <p>The best place to buy and sell items through auctions!</p>
+    </div>
+    
+    <div class="container" id="signin-container">
+        <h2>Signin</h2>
+        <input type="text" placeholder="Username">
+        <input type="password" placeholder="Password">
+        <button onclick="document.getElementById('dashboard-link').classList.remove('disabled'); document.getElementById('post-auction-link').classList.remove('disabled'); showSection('landing-container');">Signin</button>
+    </div>
+    
+    <div class="container" id="signup-container">
+        <h2>Signup</h2>
+        <input type="text" placeholder="Username">
+        <input type="email" placeholder="Email">
+        <input type="password" placeholder="Password">
+        <button>Signup</button>
+    </div>
+    
+    <div class="container" id="dashboard-container">
+        <h2>Dashboard</h2>
+        <p>Welcome to your dashboard! Here you can manage your auctions.</p>
+    </div>
+    
+    <div class="container" id="post-auction-container">
+        <h2>Post Auction</h2>
+        <p>Create a new auction listing by filling in the details.</p>
+    </div>
+    
+    <div class="footer">
+        <p>&copy; 2024 Auction App. All rights reserved.</p>
+    </div>
+</body>
+</html>
