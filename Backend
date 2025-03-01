@@ -1,0 +1,114 @@
+// server.js - Main entry point for the backend
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+mongoose.connect('mongodb://localhost:27017/auctionApp', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => console.log('MongoDB Connected')).catch(err => console.log(err));
+
+const User = require('./models/User');
+const Auction = require('./models/Auction');
+
+// User Signup
+app.post('/signup', async (req, res) => {
+    const { username, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        const user = new User({ username, email, password: hashedPassword });
+        await user.save();
+        res.json({ message: 'User registered successfully' });
+    } catch (error) {
+        res.status(400).json({ error: 'Error signing up' });
+    }
+});
+
+// User Signin
+app.post('/signin', async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const token = jwt.sign({ id: user._id }, 'secretkey', { expiresIn: '1h' });
+    res.json({ token, user: { id: user._id, username: user.username, email: user.email } });
+});
+
+// Middleware for authentication
+const verifyToken = (req, res, next) => {
+    const token = req.header('Authorization');
+    if (!token) return res.status(401).json({ error: 'Access denied' });
+    try {
+        const verified = jwt.verify(token, 'secretkey');
+        req.user = verified;
+        next();
+    } catch (error) {
+        res.status(400).json({ error: 'Invalid token' });
+    }
+};
+
+// Create Auction (Only Authenticated Users)
+app.post('/auction', verifyToken, async (req, res) => {
+    const { title, description, startingBid } = req.body;
+    try {
+        const auction = new Auction({
+            title, description, startingBid, highestBid: startingBid, conductedBy: req.user.id
+        });
+        await auction.save();
+        res.json({ message: 'Auction created successfully' });
+    } catch (error) {
+        res.status(400).json({ error: 'Error creating auction' });
+    }
+});
+
+// Fetch Auctions
+app.get('/auctions', async (req, res) => {
+    const auctions = await Auction.find().populate('conductedBy', 'username');
+    res.json(auctions);
+});
+
+// Place a Bid
+app.post('/bid/:id', verifyToken, async (req, res) => {
+    const { amount } = req.body;
+    const auction = await Auction.findById(req.params.id);
+    if (!auction) return res.status(404).json({ error: 'Auction not found' });
+
+    if (amount <= auction.highestBid) {
+        return res.status(400).json({ error: 'Bid must be higher than the current highest bid' });
+    }
+    auction.highestBid = amount;
+    auction.highestBidder = req.user.id;
+    await auction.save();
+    res.json({ message: 'Bid placed successfully' });
+});
+
+app.listen(5000, () => console.log('Server running on port 5000'));
+
+// models/User.js
+const userSchema = new mongoose.Schema({
+    username: String,
+    email: String,
+    password: String
+});
+module.exports = mongoose.model('User', userSchema);
+
+// models/Auction.js
+const auctionSchema = new mongoose.Schema({
+    title: String,
+    description: String,
+    startingBid: Number,
+    highestBid: Number,
+    highestBidder: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    conductedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+});
+module.exports = mongoose.model('Auction', auctionSchema);
